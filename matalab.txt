@@ -6,6 +6,7 @@ function []=Q3()
     [teta1,freq]=meshgrid(linspace(0,pi()/4,50),linspace(7.5*10^14,3.75*10^14,50));    
     teta2=asin((1/n2).*sin(teta1));
     teta3=asin((1/n3).*sin(teta1));
+    kj=2.8;
 
     Kz2 = (2.*pi().*freq./c)*n2.* cos(teta2);
     ZTE1=120*pi()./cos(teta1);
