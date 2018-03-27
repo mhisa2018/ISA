@@ -69,3 +69,44 @@ void opcodeReader()
 	}
 }
 
+/*function: FindOPcode()
+ The function gets a char which contain the order and return the opcode of it by the table 
+ in the project
+
+inputs: char real_oreder[] - order from memin
+
+outputs: int opcode 
+
+algorithem: -set two arrays 
+              one contains all the possible orders.
+	      second contains the opcodes.
+	    -for loop
+	      in each iteration we caompwr the input to one of the possible order
+	       if the words are wqual
+	         get the opcode from the opcode array
+		 break the loop
+	       else
+	         continue
+*/
+
+int FindOPcode(char real_order[])
+{
+	int opcode = 0;
+	int comper = 0;
+	int possible = 0;
+	char orders[][16] = {"add", "sub" ,"and" ,"or" , "sll" , "sra" ,"reserved" ,"beq",
+	                   "bgt" ,"ble" ,"bne" ,"jal" ,"lw" ,"sw" ,"lhi" ,"halt"};
+	int optional_codes[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
+	for (possible = 0; possible < 16; possible++)
+	{
+		comper = memcmp(orders[possible],real_order, sizeof(char**));
+
+		if (comper == 0)
+		{
+			opcode = optional_codes[possible];
+			break;
+		}
+	}
+}
+
