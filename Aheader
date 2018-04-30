@@ -1,0 +1,63 @@
+/*Header for Assembler*/
+
+#define _CRT_SECURE_NO_WARNINGS
+#define MAX_LEN 501
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
+
+typedef struct Label
+{
+	char name[MAX_LEN];//the label name
+	int place;//the label line number
+	struct label* next;//next label
+}label;
+
+typedef struct WordL
+{
+	int line;//the line of the word
+	int value;//the value in the register
+	struct Word* next;//the next Word
+}Word;
+
+//main core functions
+
+void reader(char ReadFile[], char WtiteFile[]);//The function read from the input file and eventually write the output file
+void Writer(label *Lhead, Word *Whead, int *line, char **memArr);//The function write each line to the memmory array
+
+//general functions
+
+void lineSeparator();//separate the words of the input line
+char FindReg(char reg[]);//find the reg number
+int checkImm();//Check if there is use of $imm
+int IsNum(char string[]);//check if a string represent a number
+char* decToHex(char string[]);//convert a string of decimal number to a string of hexa number
+int hexToDec(char string[]);//The function convert string of hex number to integer
+int WordE(int index);//find the end index of each word
+void opcodeReader();//separate the line when it is an opcode
+int FindOPcode(char real_order[]);// find the correct opcode number 
+char **D_Arr_Creator(int count);// create 2D array of stirngs which represent the main memmory
+void FillOpcode(int line, char** memArr);//fill the registers with their values
+void ImmFiller(char memArr[][5], int line, label *head);//wrtite in the memory the value of a imm or the address of a label
+
+//label functions
+
+label* LabelCreator(int place);//create a new label
+label* findLabel(label* head, char name[]);//find a label by it name
+label* ListCreator(FILE* fp, Word* list, int *count);// create a linked list of labels and Word
+
+//Word functions
+
+Word* CreateWord();// Create a new Word struct
+Word* CheckIfWord(int *count, Word* list);// return pointer to the requested Word
+Word* FindWord(Word *head, char string[]);//Find a Word struct by it place in the memmory
+int FindMaxWord(Word *Whead);//find the line of the last .word opcode
+
+
+//Free functions
+
+void FreeW(Word* head);//The Function free the Word linked list
+void FreeL(label *head);//The Function free the label linked list
+void FreeStr(char **arr, int size);//The function free the 2D array of the main memmory
