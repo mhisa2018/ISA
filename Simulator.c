@@ -1,7 +1,7 @@
 #include "simulator.h"
 
-static char memory[65536][6];
-int PC = 0;   
+static char memory[65535][6];
+unsigned short PC = 0;   
 int orders_counter = 0;
 long memout_size = 0;
 static signed long regArr[16] = { 0 };
@@ -78,9 +78,9 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	int  imm_rt_flag = 0;
 	int  value = 0;
 	char str[6];
-	int imm = 0;
+	long imm = 0;
 
-	orders_counter++;
+	
 	/*1*/
 	intrd = ctol(rd);
 	intrs = ctol(rs);
@@ -173,16 +173,17 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	{
 		if (imm_flag == 0)
 		{
-			regArr[intrd] = regArr[intrs] << regArr[intrt];
+			
+			regArr[intrd] = (regArr[intrs]) << (regArr[intrt] & 0x1F);
 			PC += 1;
 		}
 		else
 		{
 			imm = sigen_exctation(memory[PC + 1]);
 			if(imm_rs_flag == 1)
-				regArr[intrd] = imm << regArr[intrt];
-			if(imm_rt_flag == 1)
-				regArr[intrd] = regArr[intrs] << imm;
+				regArr[intrd] = imm << (regArr[intrt] &0x1F);
+			if (imm_rt_flag == 1)
+				regArr[intrd] = regArr[intrs] << (imm & 0x1F);
 			PC += 2;
 		}
 	}
@@ -191,16 +192,17 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	{
 		if (imm_flag == 0)
 		{
-			regArr[intrd] = regArr[intrs] >> regArr[intrt];
+			regArr[intrd] = regArr[intrs] / pow(2,regArr[intrt] & 0x1F);
 			PC += 1;
 		}
 		else
 		{
+			
 			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rs_flag == 1)
-				regArr[intrd] = imm >> regArr[intrt];
+				regArr[intrd] = imm / pow(2,regArr[intrt] & 0x1F);
 			if (imm_rt_flag == 1)
-				regArr[intrd] = regArr[intrs] >> imm;
+				regArr[intrd] = regArr[intrs] / pow(2, imm & 0x1F);
 			PC += 2;
 		}
 	}
@@ -213,28 +215,30 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 		if (imm_flag == 0)
 		{
 			if (regArr[intrs] == regArr[intrt])
-				PC = (int)(regArr[intrd] & 0xFFFF);
+				PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 			else PC++;
 		}
 		if (imm_flag != 0)
 		{
 			imm = sigen_exctation(memory[PC + 1]);
-			if(imm_rd_flag)
+			if(imm_rd_flag == 1)
 			{
 				if (regArr[intrs] == regArr[intrt])
-					PC = (int)(imm & 0xFFFF);
+					PC = (unsigned short)(imm & 0xFFFF);
+				else PC += 2;
 			}
-			else if (imm_rs_flag)
+			if (imm_rs_flag == 1)
 			{
 				if (imm == regArr[intrt])
-					PC = (int)(regArr[intrd] & 0xFFFF);
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
+				else PC += 2;
 			}
-			else if (imm_rt_flag)
+			if (imm_rt_flag == 1)
 			{
 				if (regArr[intrs] == imm)
-					PC = (int)(regArr[intrd] & 0xFFFF);
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
+				else PC += 2;
 			}
-			else PC += 2;
 		}
 	}
 
@@ -243,28 +247,28 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 		if (imm_flag == 0)
 		{
 			if (regArr[intrs] > regArr[intrt])
-				PC = regArr[intrd] & 0xFFFF;
+				PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 			else PC++;
 		}
 		if (imm_flag != 0)
 		{
 			imm = sigen_exctation(memory[PC + 1]);
-			if (imm_rd_flag)
+			if (imm_rd_flag == 1)
 			{
 				if (regArr[intrs] > regArr[intrt])
-					PC = (int)imm & 0xFFFF;
+					PC = (unsigned short)(imm & 0xFFFF);
 				else PC += 2;
 			}
-			else if (imm_rs_flag)
+			 if (imm_rs_flag == 1)
 			{
 				if (imm > regArr[intrt])
-					PC = (int)regArr[intrd] & 0xFFFF;
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 				else PC += 2;
 			}
-			else if (imm_rt_flag)
+			if (imm_rt_flag == 1)
 			{
 				if (regArr[intrs] > imm)
-					PC = (int)regArr[intrd] & 0xFFFF;
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 				else PC += 2;
 			}
 			
@@ -276,28 +280,31 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 		if (imm_flag = 0)
 		{
 			if (regArr[intrs] <= regArr[intrt])
-				PC = regArr[intrd] & 0xFFFF;
+				PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 			else PC++;
 		}
 		if (imm_flag != 0)
 		{
 			imm = sigen_exctation(memory[PC + 1]);
-			if (imm_rd_flag)
+			if (imm_rd_flag == 1)
 			{
 				if (regArr[intrs] <= regArr[intrt])
-					PC = imm & 0xFFFF;
+					PC = (unsigned short)(imm & 0xFFFF);
+				else PC += 2;
 			}
-			else if (imm_rs_flag)
+			if (imm_rs_flag == 1)
 			{
 				if (imm <= regArr[intrt])
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
+				else PC += 2;
 			}
-			else if (imm_rt_flag)
+			if (imm_rt_flag == 1)
 			{
 				if (regArr[intrs] <= imm)
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
+				else PC += 2;
 			}
-			else PC += 2;
+		
 		}
 	}
 	
@@ -306,28 +313,30 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 		if (imm_flag = 0)
 		{
 			if (regArr[intrs] != regArr[intrt])
-				PC = regArr[intrd] & 0xFFFF;
+				PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 			else PC++;
 		}
 		if (imm_flag != 0)
 		{
 			imm = sigen_exctation(memory[PC + 1]);
-			if (imm_rd_flag)
+			if (imm_rd_flag == 1)
 			{
 				if (regArr[intrs] != regArr[intrt])
-					PC = imm & 0xFFFF;
+					PC = (unsigned short)(imm & 0xFFFF);
+				else PC += 2;
 			}
-			else if (imm_rs_flag)
+			if (imm_rs_flag == 1)
 			{
 				if (imm != regArr[intrt])
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
+				else PC += 2;
 			}
-			else if (imm_rt_flag)
+			if (imm_rt_flag == 1)
 			{
 				if (regArr[intrs] != imm)
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (unsigned short)(regArr[intrd] & 0xFFFF);
+				else PC += 2;
 			}
-			else PC += 2;
 		}
 
 
@@ -337,21 +346,21 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	{
 		if (imm_flag == 0 )
 		{ 
-			regArr[15] = PC + 1;
-			PC = regArr[intrd] & 0xFFFF;
+			regArr[15] = (long)(PC + 1);
+			PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 		}
 		if (imm_flag != 0)
 		{
 			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rd_flag == 1)
 			{ 
-				regArr[15] = PC + 2;
-				PC = imm & 0xFFFF;
+				regArr[15] = (long)(PC + 2);
+				PC = (unsigned short)(imm & 0xFFFF);
 			}
 			if (imm_rs_flag == 1 || imm_rt_flag == 1)
 			{
-				regArr[15] = PC + 2;
-				PC = regArr[intrd] & 0xFFFF;
+				regArr[15] = (long)(PC + 2);
+				PC = (unsigned short)(regArr[intrd] & 0xFFFF);
 			}
 		}
 	}
@@ -360,6 +369,7 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	{
 		if (imm_flag == 0)
 		{
+		// NEED -1 ??
 			regArr[intrd] = sigen_exctation(memory[(regArr[intrs]) + (regArr[intrt])-1]);
 			PC += 1;
 		}
@@ -582,7 +592,7 @@ int if_imm(int mem_cell)
 			
 		}
 
-		
+		orders_counter++;
 		
 		if (exit_flag == -1)  //reach halt
 			break;
@@ -626,11 +636,18 @@ int main()
 	char word = 'D';
 	char line[4]="0400", str[33];
 	char sec[4];
+	short n;
+	
+	k = 8;
+	n = 8;
+	C3 = 8;
+
 	
 	//fp = fopen("regout.txt", "w");
 	//write_regArr_to_regout(fp);
 	//num = Fill_Memory_Array(fp);
 
+	
 	
 	fetch_decode_execute();
 	//printf("%s\n", memory[0]);
