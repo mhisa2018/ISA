@@ -69,7 +69,7 @@ algorithem - 1.convert registers from char to long
 			 2.check which register is imm
 			 3.chek the opcode and oparate it according to if there is imm or not.
 */
-int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long imm)
+int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long imm_flag)
 {
 	unsigned long intrd = 0, intrs = 0, intrt = 0;
 	int  Newfirst16;
@@ -78,13 +78,15 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	int  imm_rt_flag = 0;
 	int  value = 0;
 	char str[6];
+	int imm = 0;
 
+	orders_counter++;
 	/*1*/
 	intrd = ctol(rd);
 	intrs = ctol(rs);
 	intrt = ctol(rt);
 	/*2*/
-	if (imm != 0)
+	if (imm_flag != 0)
 	{
 		if (rd == '1')
 			imm_rd_flag = 1;
@@ -96,13 +98,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	/*3*/
 	if (opcode == '0')			//add
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			regArr[intrd] = regArr[intrs] + regArr[intrt];
 			PC += 1;
 		}
 		else 
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rs_flag == 1)
 				regArr[intrd] = imm + regArr[intrt];
 
@@ -114,13 +117,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 
 	else if (opcode == '1')     //sub
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			regArr[intrd] = regArr[intrs] - regArr[intrt];
 			PC += 1;
 		}
 		else
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rs_flag == 1)
 				regArr[intrd] = imm - regArr[intrt];
 			if (imm_rt_flag == 1)
@@ -131,13 +135,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 
 	else if (opcode == '2')    //bitwise and
 	{ 
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			regArr[intrd] = regArr[intrs] & regArr[intrt];
 			PC += 1;
 		}
 		else
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if(imm_rs_flag == 1)
 				regArr[intrd] = imm & regArr[intrt];
 			if (imm_rt_flag == 1)
@@ -148,13 +153,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	
 	else if (opcode =='3')    //bitwise or
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			regArr[intrd] = regArr[intrs] | regArr[intrt];
 			PC += 1;
 		}
 		else
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if(imm_rs_flag == 1)
 				regArr[intrd] = imm | regArr[intrt];
 			if(imm_rt_flag == 1)
@@ -165,13 +171,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	
 	else if (opcode == '4')    //sll
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			regArr[intrd] = regArr[intrs] << regArr[intrt];
 			PC += 1;
 		}
 		else
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if(imm_rs_flag == 1)
 				regArr[intrd] = imm << regArr[intrt];
 			if(imm_rt_flag == 1)
@@ -182,13 +189,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 
 	else if (opcode == '5')    //sra
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			regArr[intrd] = regArr[intrs] >> regArr[intrt];
 			PC += 1;
 		}
 		else
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rs_flag == 1)
 				regArr[intrd] = imm >> regArr[intrt];
 			if (imm_rt_flag == 1)
@@ -202,28 +210,29 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 
 	else if (opcode  == '7')   //beq
 	{
-		if (imm = 0)
+		if (imm_flag == 0)
 		{
 			if (regArr[intrs] == regArr[intrt])
-				PC = regArr[intrd] & 0xFFFF;
+				PC = (int)(regArr[intrd] & 0xFFFF);
 			else PC++;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if(imm_rd_flag)
 			{
 				if (regArr[intrs] == regArr[intrt])
-					PC = imm & 0xFFFF;
+					PC = (int)(imm & 0xFFFF);
 			}
 			else if (imm_rs_flag)
 			{
 				if (imm == regArr[intrt])
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (int)(regArr[intrd] & 0xFFFF);
 			}
 			else if (imm_rt_flag)
 			{
 				if (regArr[intrs] == imm)
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (int)(regArr[intrd] & 0xFFFF);
 			}
 			else PC += 2;
 		}
@@ -231,43 +240,48 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 
 	else if (opcode == '8')   //bgt
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			if (regArr[intrs] > regArr[intrt])
 				PC = regArr[intrd] & 0xFFFF;
 			else PC++;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rd_flag)
 			{
 				if (regArr[intrs] > regArr[intrt])
-					PC = imm & 0xFFFF;
+					PC = (int)imm & 0xFFFF;
+				else PC += 2;
 			}
 			else if (imm_rs_flag)
 			{
 				if (imm > regArr[intrt])
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (int)regArr[intrd] & 0xFFFF;
+				else PC += 2;
 			}
 			else if (imm_rt_flag)
 			{
 				if (regArr[intrs] > imm)
-					PC = regArr[intrd] & 0xFFFF;
+					PC = (int)regArr[intrd] & 0xFFFF;
+				else PC += 2;
 			}
-			else PC += 2;
+			
 		}
 	}
 	
 	else if (opcode == '9')   //ble
 	{
-		if (imm = 0)
+		if (imm_flag = 0)
 		{
 			if (regArr[intrs] <= regArr[intrt])
 				PC = regArr[intrd] & 0xFFFF;
 			else PC++;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rd_flag)
 			{
 				if (regArr[intrs] <= regArr[intrt])
@@ -289,14 +303,15 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	
 	else if (opcode == 'A')   //bne
 	{
-		if (imm = 0)
+		if (imm_flag = 0)
 		{
 			if (regArr[intrs] != regArr[intrt])
 				PC = regArr[intrd] & 0xFFFF;
 			else PC++;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rd_flag)
 			{
 				if (regArr[intrs] != regArr[intrt])
@@ -320,13 +335,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	
 	else if (opcode == 'B')   //jal
 	{
-		if (imm == 0 )
+		if (imm_flag == 0 )
 		{ 
 			regArr[15] = PC + 1;
 			PC = regArr[intrd] & 0xFFFF;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rd_flag == 1)
 			{ 
 				regArr[15] = PC + 2;
@@ -342,13 +358,14 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 
 	else if (opcode == 'C')   //lw
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			regArr[intrd] = sigen_exctation(memory[(regArr[intrs]) + (regArr[intrt])-1]);
 			PC += 1;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rs_flag == 1)
 				regArr[intrd] = sigen_exctation(memory[imm + (regArr[intrt])]);
 			if (imm_rt_flag == 1)
@@ -359,7 +376,7 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	
 	else if (opcode == 'D')   //sw
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			value = (int)(regArr[intrd] & 0xFFFF);
 			itoa(value, str, 16);
@@ -369,8 +386,9 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 			
 			PC += 1;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rd_flag == 1)
 			{
 				value = (int)(imm & 0xFFFF);
@@ -403,14 +421,15 @@ int Do_order(int line_num, char opcode , char rd, char rs, char rt, signed long 
 	
 	else if (opcode == 'E')   //lhi
 	{
-		if (imm == 0)
+		if (imm_flag == 0)
 		{
 			Newfirst16 = regArr[intrs] & 0xFFFF;
 			regArr[intrd] = (regArr[intrd] & 0xFFFF) | (Newfirst16 << 16);
 			PC += 1;
 		}
-		if (imm != 0)
+		if (imm_flag != 0)
 		{ 
+			imm = sigen_exctation(memory[PC + 1]);
 			if (imm_rs_flag == 1)  //can rd be imm, if so what will happend?
 			{
 				Newfirst16 = imm & 0xFFFF;
@@ -440,19 +459,21 @@ void write_memout(FILE *output_file)
 { 
 	int i = 0;
 	for (i = 0; i < memout_size; i++)
-		fprintf("%s\n", memory[i]);
+		fprintf(output_file , "%s\n", memory[i]);
 }
 
 void write_trace(FILE *fp_trace, char instruc[] , char imm[])
 {
-	fprintf(fp_trace, "%x ", PC);
+	//need to fix R[0], R[1]
+
+	fprintf(fp_trace, "%.8x ", PC);
 	//print instruction
 	if (imm == 0)
 		fprintf(fp_trace, "%s ", instruc);
 	if (imm != 0)
 		fprintf(fp_trace, "%s%s ", imm, instruc);
 	//print registers
-	fprintf(fp_trace, "%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x\n",
+	fprintf(fp_trace, "%.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x %.8x\n",
 		regArr[0], regArr[1], regArr[2], regArr[3], regArr[4], regArr[5],
 		regArr[6], regArr[7], regArr[8], regArr[9], regArr[10], regArr[11],
 		regArr[12], regArr[13], regArr[14], regArr[15], regArr[16]);
@@ -519,6 +540,7 @@ int if_imm(int mem_cell)
 	 res = (long) value;
 	 return res;
  }
+ 
  void fetch_decode_execute()
 {
 	FILE *input_file;
@@ -550,20 +572,17 @@ int if_imm(int mem_cell)
 		imm_flag = if_imm(PC);
 		if (imm_flag == 0)
 		{
-			imm = 0;
-			exit_flag = Do_order(i, memory[PC][0], memory[PC][1], memory[PC][2], memory[PC][3], imm);
 			write_trace(fp_trace, memory[PC], "0");
-			
+			exit_flag = Do_order(i, memory[PC][0], memory[PC][1], memory[PC][2], memory[PC][3], imm_flag);
 		}
 		else
 		{
-			//need to conver imm to long int!!
-			imm = sigen_exctation(memory[PC + 1]);
-			exit_flag = Do_order(i, memory[PC][0], memory[PC][1], memory[PC][2], memory[PC][3], imm);
-			write_trace(fp_trace, memory[PC], memory[PC+1]);
+			write_trace(fp_trace, memory[PC], memory[PC + 1]);
+			exit_flag = Do_order(i, memory[PC][0], memory[PC][1], memory[PC][2], memory[PC][3], imm_flag);
+			
 		}
 
-		orders_counter++;
+		
 		
 		if (exit_flag == -1)  //reach halt
 			break;
@@ -593,7 +612,7 @@ int if_imm(int mem_cell)
 		printf("cannot open count.txt\n");
 	else
 	{
-		write_memout(fp_count);
+		write_count(fp_count);
 		fclose(fp_count);
 	}
 }
